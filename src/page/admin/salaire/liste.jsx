@@ -1,36 +1,53 @@
 import { useEffect, useState } from "react"
 import api_service from "../../../api/api_service";
+
 function ListeSalaire() {
     const [salaire, setSalaire] = useState([]);
+    const [paiement, setPaiement] = useState([]);
     const [user, setUser] = useState([]);
     const [result, setResult] = useState({ M: 0, F: 0 });
-    const [resultMois, setResultMois] = useState({ Janvier: 0, Fevrier: 0, Mars: 0, Avril: 0, Mai: 0, Juin: 0, Juilet: 0, Aout: 0, Septembre: 0, Octobre: 0, Novembre: 0, Decembre: 0 });
+    const [resultPaiementGenre, setResultPaiementGenre] = useState({ M: 0, F: 0 });
+    const [resultMois, setResultMois] = useState({
+        Janvier: 0, Fevrier: 0, Mars: 0, Avril: 0, Mai: 0, Juin: 0,
+        Juillet: 0, Aout: 0, Septembre: 0, Octobre: 0, Novembre: 0, Decembre: 0
+    });
+    const [resultMoisSalaire, setResultMoisSalaire] = useState({
+        Janvier: 0, Fevrier: 0, Mars: 0, Avril: 0, Mai: 0, Juin: 0,
+        Juillet: 0, Aout: 0, Septembre: 0, Octobre: 0, Novembre: 0, Decembre: 0
+    });
 
-    const listeMois = [{ id: '01', label: 'Janvier' }, { id: '02', label: 'Fevrier' }, { id: '03', label: 'Mars' },
-    { id: '04', label: 'Avril' }, { id: '05', label: 'Mai' }, { id: '06', label: 'Juin' }, { id: '07', label: 'Juillet' },
-    { id: '08', label: 'Aout' }, { id: '09', label: 'Septembre' }, { id: '10', label: 'Octobre' },
-    { id: '11', label: 'Novembre' }, { id: '12', label: 'Decembre' }]
+    const listeMois = [
+        { id: '01', label: 'Janvier' }, { id: '02', label: 'Fevrier' },
+        { id: '03', label: 'Mars' }, { id: '04', label: 'Avril' },
+        { id: '05', label: 'Mai' }, { id: '06', label: 'Juin' },
+        { id: '07', label: 'Juillet' }, { id: '08', label: 'Aout' },
+        { id: '09', label: 'Septembre' }, { id: '10', label: 'Octobre' },
+        { id: '11', label: 'Novembre' }, { id: '12', label: 'Decembre' }
+    ]
 
     const getSalaires = async () => {
         try {
             const response = await api_service.get('salaries?sortfield=t.rowid&sortorder=ASC&limit=100')
             setSalaire(response.data)
-        } catch (e) {
-            console.log(e)
-        }
+        } catch (e) { console.log(e) }
+    }
+
+    const getPaiements = async () => {
+        try {
+            const response = await api_service.get('salaries/payments')
+            setPaiement(response.data)
+        } catch (e) { console.log(e) }
     }
 
     const getUser = async () => {
         try {
             const response = await api_service.get('users?sortfield=t.rowid&sortorder=ASC&limit=100')
             setUser(response.data)
-        } catch (e) {
-            console.log(e)
-        }
+        } catch (e) { console.log(e) }
     }
 
     function getMoisLabel(timestamp) {
-        if (!timestamp) return '-'
+        if (!timestamp) return null
         const MOIS = [
             'Janvier', 'Fevrier', 'Mars', 'Avril',
             'Mai', 'Juin', 'Juillet', 'Aout',
@@ -55,52 +72,77 @@ function ListeSalaire() {
         }
     }
 
-    const getSalaireParMois = async () => {
-        const salaireParMois = {
-            Janvier: 0, Fevrier: 0, Mars: 0, Avril: 0, Mai: 0, Juin: 0, Juillet: 0, Aout: 0,
-            Septembre: 0, Octobre: 0, Novembre: 0, Decembre: 0
-        };
-        for (const sal of salaire) {
-            const amount = Number(sal.amount);
-            const salaryMonth = getMoisLabel(sal.dateep)
-            salaireParMois[salaryMonth] += amount
+    const getPaiementParGenre = () => {
+        const calc = { M: 0, F: 0 }
+        for (const p of paiement) {
+
+            const salaireFound = salaire.find(s => s.id === p.fk_salary)
+            if (!salaireFound) continue
+
+            const userFound = user.find(u => u.id === salaireFound.fk_user)
+            const genre = userFound?.gender
+            const amount = Number(p.amount)
+
+            if (genre === 'man') calc.M += amount
+            else if (genre === 'woman') calc.F += amount
         }
-        setResultMois(salaireParMois)
+        setResultPaiementGenre(calc)
+    }
+
+    const getPaiementParMois = () => {
+        const paiementParMois = {
+            Janvier: 0, Fevrier: 0, Mars: 0, Avril: 0, Mai: 0, Juin: 0,
+            Juillet: 0, Aout: 0, Septembre: 0, Octobre: 0, Novembre: 0, Decembre: 0
+        }
+        for (const p of paiement) {
+            const amount = Number(p.amount)
+            const mois = getMoisLabel(p.datep)
+            if (mois) paiementParMois[mois] += amount
+        }
+        setResultMois(paiementParMois)
+    }
+
+    const getSalaireParMois = () => {
+        const salaireParMois = {
+            Janvier: 0, Fevrier: 0, Mars: 0, Avril: 0, Mai: 0, Juin: 0,
+            Juillet: 0, Aout: 0, Septembre: 0, Octobre: 0, Novembre: 0, Decembre: 0
+        }
+        for (const s of salaire) {
+            const amount = Number(s.amount)
+            const mois = getMoisLabel(s.datesp)
+            if (mois) salaireParMois[mois] += amount
+        }
+        setResultMoisSalaire(salaireParMois)
     }
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                await Promise.all([
-                    getSalaires(),
-                    getUser()
-                ]);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        fetchData();
-    }, []);
+                await Promise.all([getSalaires(), getUser(), getPaiements()])
+            } catch (error) { console.error(error) }
+        }
+        fetchData()
+    }, [])
 
     useEffect(() => {
         getSalaireParGenre()
+        getSalaireParMois()
     }, [salaire, user])
 
     useEffect(() => {
-        getSalaireParMois()
-    }, [salaire])
-
+        getPaiementParMois()
+        getPaiementParGenre()
+    }, [paiement, salaire, user])
 
     return (
         <div>
             <h1>Dashboard suivi salaire</h1>
-
             <p>Suivi salaire par genre</p>
             <table>
                 <thead>
                     <tr>
-                        <th>homme</th>
-                        <th>femme</th>
+                        <th>Homme</th>
+                        <th>Femme</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -111,21 +153,50 @@ function ListeSalaire() {
                 </tbody>
             </table>
 
-            <p>Suivi salaire par mois </p>
+
+            <p>Suivi salaire par mois</p>
             <table>
                 <thead>
                     <tr>
-                        {listeMois.map(l => (
-                            <th key={l.id}>{l.label}</th>
-                        ))}
+                        {listeMois.map(l => <th key={l.id}>{l.label}</th>)}
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        {listeMois.map(m =>(
-                            <td key={m.id}>
-                                {resultMois[m.label]}
-                            </td>
+                        {listeMois.map(m => (
+                            <td key={m.id}>{resultMoisSalaire[m.label] || 0}</td>
+                        ))}
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>Suivi paiement par genre</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Homme</th>
+                        <th>Femme</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{resultPaiementGenre.M}</td>
+                        <td>{resultPaiementGenre.F}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>Suivi paiement par mois</p>
+            <table>
+                <thead>
+                    <tr>
+                        {listeMois.map(l => <th key={l.id}>{l.label}</th>)}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        {listeMois.map(m => (
+                            <td key={m.id}>{resultMois[m.label] || 0}</td>
                         ))}
                     </tr>
                 </tbody>
@@ -133,4 +204,5 @@ function ListeSalaire() {
         </div>
     )
 }
+
 export default ListeSalaire

@@ -114,7 +114,7 @@ function Salaries() {
             <p>Liste des salariés</p>
             <div>
 
-                <input type="text" placeholder="Rechercher par nom" value={search} onChange={(e) => setSearch(e.target.value)}/>
+                <input type="text" placeholder="Rechercher par nom" value={search} onChange={(e) => setSearch(e.target.value)} />
 
                 <select
                     value={genderSearch}
@@ -232,9 +232,9 @@ function Salaries() {
                 </tbody>
             </table>
 
-            <button onClick={() => navigate("/payer/salaire")}>
-                Creer payement salaire
-            </button>
+            <button onClick={() => navigate("/payer/salaire")}> Creer payement salaire</button>
+            <button onClick={() => navigate('/liste/salarier')}>Voir liste salarier sans filtres </button>
+
         </div>
     );
 }

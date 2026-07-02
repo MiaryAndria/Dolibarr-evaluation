@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom";
 import api_service from "../../../../api/api_service";
+
 
 function PayerSalaire() {
     const [user, setUser] = useState([]);
@@ -12,6 +14,7 @@ function PayerSalaire() {
     const [dateDebut, setdateDebut] = useState('');
     const [dateFin, setdateFin] = useState('');
     const [message, setMessage] = useState('');
+    const navigate = useNavigate();
 
     const getUser = async () => {
         try {
@@ -28,7 +31,7 @@ function PayerSalaire() {
         return Math.floor(date.getTime() / 1000)
     }
 
-    const creerSalaire = async (data) => {
+    const creerSalaire = async () => {
         if (montant < 0) {
             setMessage('montant ne peux pas etre negatif ')
             return
@@ -127,10 +130,9 @@ function PayerSalaire() {
         getAllPayements();
     }, []);
 
-
-
     return (
         <div>
+            <button onClick={()=>navigate('/payer/all')}> Gerer multipaiement </button>
             <h1>Paiement salaire </h1>
             <p>{message}</p>
             <p>Entrer montant</p>
@@ -163,6 +165,7 @@ function PayerSalaire() {
             <table>
                 <thead>
                     <tr>
+                        <th>Nom utilisateur</th>
                         <th>Libellé</th>
                         <th>Montant</th>
                         <th>Payé</th>
@@ -175,9 +178,11 @@ function PayerSalaire() {
                     {salaire.map(s => {
                         const totalPaye = getMontantsDejaPayes(s.id);
                         const restant = parseFloat(s.amount) - totalPaye;
+                        const userSalaire = user.find(u=>u.id === s.fk_user )
 
                         return (
                             <tr key={s.id}>
+                                <td>{userSalaire?.lastname}{userSalaire?.firstname}</td>
                                 <td>{s.label}</td>
                                 <td>{s.amount}</td>
                                 <td>{totalPaye}</td>

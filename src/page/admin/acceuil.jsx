@@ -8,6 +8,7 @@ return(
         <p>Bienvenue dans page admin</p>
         <button onClick={()=>navigate('/admin/import')}>Faire import</button>
         <button onClick={()=>navigate('/salaire')}>Dashboard salaire</button>
+        <button onClick={()=>navigate('/liste/ferier')}>Voir liste ferier</button>
         <Reset/>
     </div>
 )

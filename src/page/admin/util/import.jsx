@@ -83,7 +83,8 @@ function ImportData() {
                     genre: (row.genre || row.sexe || '').trim(),
                     identifiant: (row.identifiant || row.login || '').trim(),
                     mdp: (row.mdp || row.mot_de_passe || row.password || '').trim(),
-                    heureTravailSemaine: parseMontant(row.heure_travail_semaine || row.heures)
+                    heureTravailSemaine: parseMontant(row.heure_travail_semaine || row.heures),
+                    poste : (row.poste)
                 })).filter(e => e.refEmploye && e.identifiant) 
                 setEmployes(emp)
                 addMsg(`${emp.length} employé(s) lu(s) depuis le CSV`)
@@ -124,7 +125,8 @@ function ImportData() {
                     employee: '1',
                     gender: mapGender(emp.genre),
                     weeklyhours: emp.heureTravailSemaine,
-                    ref_employee: emp.refEmploye
+                    ref_employee: emp.refEmploye,
+                    job:emp.poste
                 })
                 const id = response.data
                 newMap[emp.refEmploye] = id
