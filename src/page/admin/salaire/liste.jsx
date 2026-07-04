@@ -1,49 +1,59 @@
 import { useEffect, useState } from "react"
 import api_service from "../../../api/api_service";
+import api_sqlite from "../../../api/api_sqlite";
 
 function ListeSalaire() {
     const [salaire, setSalaire] = useState([]);
     const [paiement, setPaiement] = useState([]);
     const [user, setUser] = useState([]);
+    const [mois,setMois] = useState([]);
     const [result, setResult] = useState({ M: 0, F: 0 });
     const [resultPaiementGenre, setResultPaiementGenre] = useState({ M: 0, F: 0 });
     const [resultMois, setResultMois] = useState({
         Janvier: 0, Fevrier: 0, Mars: 0, Avril: 0, Mai: 0, Juin: 0,
         Juillet: 0, Aout: 0, Septembre: 0, Octobre: 0, Novembre: 0, Decembre: 0
     });
+
     const [resultMoisSalaire, setResultMoisSalaire] = useState({
         Janvier: 0, Fevrier: 0, Mars: 0, Avril: 0, Mai: 0, Juin: 0,
         Juillet: 0, Aout: 0, Septembre: 0, Octobre: 0, Novembre: 0, Decembre: 0
     });
 
-    const listeMois = [
-        { id: '01', label: 'Janvier' }, { id: '02', label: 'Fevrier' },
-        { id: '03', label: 'Mars' }, { id: '04', label: 'Avril' },
-        { id: '05', label: 'Mai' }, { id: '06', label: 'Juin' },
-        { id: '07', label: 'Juillet' }, { id: '08', label: 'Aout' },
-        { id: '09', label: 'Septembre' }, { id: '10', label: 'Octobre' },
-        { id: '11', label: 'Novembre' }, { id: '12', label: 'Decembre' }
-    ]
 
     const getSalaires = async () => {
         try {
             const response = await api_service.get('salaries?sortfield=t.rowid&sortorder=ASC&limit=100')
             setSalaire(response.data)
-        } catch (e) { console.log(e) }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    const getAllMonth = async () => {
+        try {
+            const response = await api_sqlite.get('/api/liste/mois')
+            setMois(response.data)
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     const getPaiements = async () => {
         try {
             const response = await api_service.get('salaries/payments')
             setPaiement(response.data)
-        } catch (e) { console.log(e) }
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     const getUser = async () => {
         try {
             const response = await api_service.get('users?sortfield=t.rowid&sortorder=ASC&limit=100')
             setUser(response.data)
-        } catch (e) { console.log(e) }
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     function getMoisLabel(timestamp) {
@@ -118,8 +128,9 @@ function ListeSalaire() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                await Promise.all([getSalaires(), getUser(), getPaiements()])
-            } catch (error) { console.error(error) }
+                await Promise.all([getSalaires(), getUser(), getPaiements(),getAllMonth()])
+            } catch (error) { 
+                console.error(error) }
         }
         fetchData()
     }, [])
@@ -158,13 +169,13 @@ function ListeSalaire() {
             <table>
                 <thead>
                     <tr>
-                        {listeMois.map(l => <th key={l.id}>{l.label}</th>)}
+                        {mois.map(m => <th key={m.id}>{m.date}</th>)}
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        {listeMois.map(m => (
-                            <td key={m.id}>{resultMoisSalaire[m.label] || 0}</td>
+                        {mois.map(m => (
+                            <td key={m.id}>{resultMoisSalaire[m.date] || 0}</td>
                         ))}
                     </tr>
                 </tbody>
@@ -190,13 +201,13 @@ function ListeSalaire() {
             <table>
                 <thead>
                     <tr>
-                        {listeMois.map(l => <th key={l.id}>{l.label}</th>)}
+                        {mois.map(m => <th key={m.id}>{m.date}</th>)}
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        {listeMois.map(m => (
-                            <td key={m.id}>{resultMois[m.label] || 0}</td>
+                        {mois.map(m => (
+                            <td key={m.id}>{resultMois[m.date] || 0}</td>
                         ))}
                     </tr>
                 </tbody>

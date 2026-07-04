@@ -1,0 +1,38 @@
+.slider-container {
+    max-width: 150px;
+    margin: 24px 0;
+    padding: 0 4px;
+}
+
+.slider-container .rc-slider-track {
+    background-color: #111;
+    height: 3px;
+}
+
+.slider-container .rc-slider-rail {
+    background-color: #eee;
+    height: 3px;
+}
+
+.slider-container .rc-slider-handle {
+    border-color: #111;
+    background-color: #fff;
+    width: 14px;
+    height: 14px;
+    margin-top: -6px;
+    box-shadow: none;
+    opacity: 1;
+}
+
+.slider-container .rc-slider-handle:hover,
+.slider-container .rc-slider-handle:active,
+.slider-container .rc-slider-handle:focus {
+    border-color: #111;
+    box-shadow: none;
+}
+
+.slider-range-label {
+    font-size: 13px;
+    color: #666;
+    margin-top: 8px;
+}

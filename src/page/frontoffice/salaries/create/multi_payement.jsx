@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api_service from "../../../../api/api_service";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
+import "./slider.css"
 
 function MultiPaiement() {
     const [idsSelectionnes, setIdsSelectionnes] = useState([]);
@@ -115,16 +116,18 @@ function MultiPaiement() {
                 <option value="Vente">Vente</option>
             </select>
 
-            <Slider
-                range
-                min={0}
-                max={200}
-                value={range}
-                onChange={setRange}
-            />
-            <p>
-                Min : {range[0]} Heure - Max : {range[1]} Heure
-            </p>
+            <div className="slider-container">
+                <Slider
+                    range
+                    min={0}
+                    max={200}
+                    value={range}
+                    onChange={setRange}
+                />
+                <p className="slider-range-label">
+                    {range[0]}h — {range[1]}h
+                </p>
+            </div>
             <button onClick={clearFilter}>Supprimer filtre</button>
 
             <ul>
@@ -149,7 +152,7 @@ function MultiPaiement() {
             <p>Date fin</p>
             <input type="date" onChange={(e) => setdateFin(e.target.value)} />
             <button onClick={creerSalaire}> creer salaire</button>
-            <button onClick={()=>navigate('/liste/salarier')}>Voir liste salarier sans filtres </button>
+            <button onClick={() => navigate('/liste/salarier')}>Voir liste salarier sans filtres </button>
 
         </div>
     )
