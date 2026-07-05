@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import Navbar from './components/Navbar'
 import LoginAdmin from './page/admin/login'
 import AcceuilAdmin from './page/admin/acceuil'
 import ImportData from './page/admin/util/import'
@@ -12,10 +13,10 @@ import MultiPaiement from './page/frontoffice/salaries/create/multi_payement'
 import ListeSalarier from './page/frontoffice/salaries/create/listeSalarier'
 import SalarierDetail from './page/frontoffice/salaries/create/detailSalarier'
 
-
 function App() {
   return (
     <div className="app-container">
+      <Navbar />
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Salaries />} />
@@ -24,13 +25,13 @@ function App() {
           <Route path="/admin/import" element={<ImportData />} />
           <Route path="/salaire" element={<ListeSalaire />} />
           <Route path="/salarier" element={<Salaries />} />
-          <Route path="/creer/ferier"element={<CreateFerier/>}/>
-          <Route path="/liste/ferier"element={<ListeFerier />}/>
-          <Route path="/payer/salaire"element={<PayerSalaire />}/>
-          <Route path="/update/ferier/:id"element={<UpdateFerier />}/>
-          <Route path="/payer/all"element={<MultiPaiement />}/>
-          <Route path="/liste/salarier"element={<ListeSalarier />}/>
-          <Route path="/salarier/:id"element={<SalarierDetail />}/>
+          <Route path="/creer/ferier" element={<CreateFerier />} />
+          <Route path="/liste/ferier" element={<ListeFerier />} />
+          <Route path="/payer/salaire" element={<PayerSalaire />} />
+          <Route path="/update/ferier/:id" element={<UpdateFerier />} />
+          <Route path="/payer/all" element={<MultiPaiement />} />
+          <Route path="/liste/salarier" element={<ListeSalarier />} />
+          <Route path="/salarier/:id" element={<SalarierDetail />} />
         </Routes>
       </main>
     </div>

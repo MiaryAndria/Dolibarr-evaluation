@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import api_service from "../../../../api/api_service";
 import { useParams, useNavigate } from "react-router-dom";
 
+import "../../../../styles/detail.css"
+
 function SalarierDetail() {
     const { id } = useParams();
     const [SalarierDetail, setSalarierDetail] = useState(null);
@@ -9,9 +11,7 @@ function SalarierDetail() {
     const [paiement, setPaiement] = useState([]);
     const [userPaiement, setUserPaiement] = useState([]);
     const [totalPaye, setTotalPaye] = useState(0);
-
     const navigate = useNavigate();
-
     const baseUrl = api_service.defaults.baseURL.replace('/api/index.php/', '')
 
     const getPhotoUrl = (user) => {
@@ -29,7 +29,6 @@ function SalarierDetail() {
 
     const formatDate = (timestamp) => {
         if (!timestamp) return "-";
-
         return new Date(timestamp * 1000).toLocaleDateString("fr-FR");
     };
 
@@ -102,10 +101,11 @@ function SalarierDetail() {
     }
 
     return (
-        <div>
-            <h2>Information salarié</h2>
+        <div className="detail-page">
+            <h2 className="page-title">Information salarié</h2>
 
-            <table>
+            <div className="table-wrapper mb-32">
+            <table className="data-table">
                 <thead>
                     <tr>
                         <th>Photo</th>
@@ -131,10 +131,15 @@ function SalarierDetail() {
                     </tr>
                 </tbody>
             </table>
+            </div>
 
-            <h1>historique salaire et paiement</h1>
-            <h2>historique salaire</h2>
-            <table>
+            <h2 className="page-title text-lg">Historique salaire et paiement</h2>
+            <div className="flex-row flex-wrap gap-24 mb-32">
+            
+            <div className="flex-1 min-w-250">
+            <h3 className="section-block-title">Historique salaire</h3>
+            <div className="table-wrapper">
+            <table className="data-table">
                 <thead>
                     <tr>
                         <th>date</th>
@@ -150,9 +155,13 @@ function SalarierDetail() {
                     ))}
                 </tbody>
             </table>
+            </div>
+            </div>
 
-            <h2>historique paiement </h2>
-            <table>
+            <div className="flex-1 min-w-250">
+            <h3 className="section-block-title">Historique paiement </h3>
+            <div className="table-wrapper">
+            <table className="data-table">
                 <thead>
                     <tr>
                         <th>date</th>
@@ -168,9 +177,16 @@ function SalarierDetail() {
                     ))}
                 </tbody>
             </table>
-            <p>Total Salaire :  {totalSalaire}</p>
-            <p> Total Payé : {totalPaye}</p>
-            <p> Total Restant : {totalRestant}</p>
+            </div>
+            </div>
+            
+            </div>
+            
+            <div className="kpi-grid">
+               <div className="kpi-card"><div className="kpi-label">Total Salaire</div><div className="kpi-value">{totalSalaire}</div></div>
+               <div className="kpi-card"><div className="kpi-label">Total Payé</div><div className="kpi-value">{totalPaye}</div></div>
+               <div className="kpi-card"><div className="kpi-label">Total Restant</div><div className={`kpi-value ${totalRestant > 0 ? "text-danger" : "text-success"}`}>{totalRestant}</div></div>
+            </div>
         </div>
     );
 }

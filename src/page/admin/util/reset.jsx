@@ -2,6 +2,8 @@ import { useState } from "react";
 import api_node from "../../../api/api_node";
 import api_sqlite from "../../../api/api_sqlite";
 
+import "../../../styles/reset.css"
+
 function Reset() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
@@ -44,10 +46,7 @@ function Reset() {
     };
 
     return (
-        <div>
-            <h3>Réinitialisation des données</h3>
-            <p>Page réinitialisation base de données</p>
-
+        <div className="reset-widget">
             <button onClick={reset} disabled={loading}>
                 {loading ? 'Suppression...' : 'Réinitialiser les données'}
             </button>

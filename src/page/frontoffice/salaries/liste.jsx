@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import api_service from "../../../api/api_service";
 import { useNavigate } from "react-router-dom";
+import "../../../styles/salaries.css"
 
 function Salaries() {
     const [salarier, setSalarier] = useState([]);
@@ -50,16 +51,29 @@ function Salaries() {
     };
 
     const getPaymentStatus = (userId) => {
-        const sal = salaires.find(s => s.fk_user === userId);
-        if (!sal) return "no_salary";
 
-        const total = paiement
-            .filter(p => p.fk_salary === String(sal.id))
-            .reduce((a, b) => a + parseFloat(b.amount), 0);
+        const userSalaires = salaires.filter(s => s.fk_user === userId);
+        const totalSalaire = userSalaires.reduce((sum, salaire) => sum + parseFloat(salaire.amount), 0);
+        if (userSalaires.length === 0) return "no_salary";
 
-        const restant = parseFloat(sal.amount) - total;
+        const calculerTotalPaye = () => {
+            let total = 0 
+            return userSalaires.reduce((sum, salaire) => {
+                const payePourCeSalaire = getPaiementPourSalaire(salaire.id);
+                total =  sum + payePourCeSalaire;
+                return total;
+            }, 0);
+        };
 
-        if (total <= 0) return "unpaid";
+        const getPaiementPourSalaire = (salaireId) => {
+            return paiement
+                .filter(p => p.fk_salary === String(salaireId))
+                .reduce((total, p) => total + parseFloat(p.amount), 0);
+        };
+
+        const totalPaye = calculerTotalPaye();
+        const restant = totalSalaire - totalPaye;
+        if (totalPaye <= 0) return "unpaid";
         if (restant <= 0) return "paid";
         return "partial";
     };
@@ -110,13 +124,13 @@ function Salaries() {
     }, []);
 
     return (
-        <div>
-            <p>Liste des salariés</p>
-            <div>
+        <div className="salaries-page">
+            <h1 className="page-title">Liste des salariés</h1>
+            <div className="filter-bar">
 
-                <input type="text" placeholder="Rechercher par nom" value={search} onChange={(e) => setSearch(e.target.value)} />
+                <input className="field-input" type="text" placeholder="Rechercher par nom" value={search} onChange={(e) => setSearch(e.target.value)} />
 
-                <select
+                <select className="field-select"
                     value={genderSearch}
                     onChange={(e) => setGenderSearch(e.target.value)}
                 >
@@ -125,7 +139,7 @@ function Salaries() {
                     <option value="woman">Femme</option>
                 </select>
 
-                <select
+                <select className="field-select"
                     value={activiteSearch}
                     onChange={(e) => setActiviteSearch(e.target.value)}
                 >
@@ -134,7 +148,7 @@ function Salaries() {
                     <option value="0">Inactif</option>
                 </select>
 
-                <select
+                <select className="field-select"
                     value={statusPaidSearch}
                     onChange={(e) => setActivitePaidSearch(e.target.value)}
                 >
@@ -145,32 +159,66 @@ function Salaries() {
                     <option value="no_salary">Aucun salaire</option>
                 </select>
 
-                <button onClick={clearFilter}>
+                <button className="btn btn-outline" onClick={clearFilter}>
                     Reset
                 </button>
 
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Photo</th>
-                        <th>Nom</th>
-                        <th>Login</th>
-                        <th>Genre</th>
-                        <th>Poste</th>
-                        <th>Statut</th>
-                        <th>Montant total</th>
-                        <th>Payé</th>
-                        <th>Restant</th>
-                    </tr>
-                </thead>
+            <div className="table-wrapper">
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            <th>Photo</th>
+                            <th>Nom</th>
+                            <th>Login</th>
+                            <th>Genre</th>
+                            <th>Poste</th>
+                            <th>Statut</th>
+                            <th>Montant total</th>
+                            <th>Payé</th>
+                            <th>Restant</th>
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    {filteredUsers.map(user => {
+                    <tbody>
+                        {filteredUsers.map(user => {
+                            const userSalaires = salaires.filter(s => s.fk_user === user.id)
+                            if (userSalaires.length === 0) {
+                                return (
+                                    <tr key={user.id}>
+                                        <td>
+                                            <img
+                                                src={getPhotoUrl(user)}
+                                                width={50}
+                                                height={50}
+                                                alt={user.lastname}
+                                            />
+                                        </td>
+                                        <td>{user.lastname}</td>
+                                        <td>{user.login}</td>
+                                        <td>{user.gender || "-"}</td>
+                                        <td>{user.job || "-"}</td>
+                                        <td>{user.status === "1" ? "Actif" : "Inactif"}</td>
+                                        <td colSpan={3}>Aucun salaire</td>
+                                    </tr>
+                                )
+                            }
 
-                        const userSalaires = salaires.filter(s => s.fk_user === user.id)
+                            const totalSalaire = userSalaires.reduce(
+                                (sum, s) => sum + parseFloat(s.amount),
+                                0
+                            )
 
-                        if (userSalaires.length === 0) {
+                            const totalPaye = userSalaires.reduce((sum, s) => {
+                                const paye = paiement
+                                    .filter(p => p.fk_salary === String(s.id))
+                                    .reduce((a, p) => a + parseFloat(p.amount), 0)
+
+                                return sum + paye
+                            }, 0)
+
+                            const restant = totalSalaire - totalPaye
+
                             return (
                                 <tr key={user.id}>
                                     <td>
@@ -181,59 +229,27 @@ function Salaries() {
                                             alt={user.lastname}
                                         />
                                     </td>
-                                    <td>{user.lastname}</td>
+
+                                    <td>{user.lastname} {user.firstname}</td>
                                     <td>{user.login}</td>
                                     <td>{user.gender || "-"}</td>
                                     <td>{user.job || "-"}</td>
                                     <td>{user.status === "1" ? "Actif" : "Inactif"}</td>
-                                    <td colSpan={3}>Aucun salaire</td>
+
+                                    <td>{totalSalaire}</td>
+                                    <td>{totalPaye}</td>
+                                    <td>{restant}</td>
                                 </tr>
                             )
-                        }
+                        })}
+                    </tbody>
+                </table>
+            </div>
 
-                        const totalSalaire = userSalaires.reduce(
-                            (sum, s) => sum + parseFloat(s.amount),
-                            0
-                        )
-
-                        const totalPaye = userSalaires.reduce((sum, s) => {
-                            const paye = paiement
-                                .filter(p => p.fk_salary === String(s.id))
-                                .reduce((a, p) => a + parseFloat(p.amount), 0)
-
-                            return sum + paye
-                        }, 0)
-
-                        const restant = totalSalaire - totalPaye
-
-                        return (
-                            <tr key={user.id}>
-                                <td>
-                                    <img
-                                        src={getPhotoUrl(user)}
-                                        width={50}
-                                        height={50}
-                                        alt={user.lastname}
-                                    />
-                                </td>
-
-                                <td>{user.lastname} {user.firstname}</td>
-                                <td>{user.login}</td>
-                                <td>{user.gender || "-"}</td>
-                                <td>{user.job || "-"}</td>
-                                <td>{user.status === "1" ? "Actif" : "Inactif"}</td>
-
-                                <td>{totalSalaire}</td>
-                                <td>{totalPaye}</td>
-                                <td>{restant}</td>
-                            </tr>
-                        )
-                    })}
-                </tbody>
-            </table>
-
-            <button onClick={() => navigate("/payer/salaire")}> Creer payement salaire</button>
-            <button onClick={() => navigate('/liste/salarier')}>Voir liste salarier sans filtres </button>
+            <div className="actions-row">
+                <button className="btn" onClick={() => navigate("/payer/salaire")}>Créer paiement salaire</button>
+                <button className="btn btn-outline" onClick={() => navigate('/liste/salarier')}>Voir tous les salariés (sans filtres)</button>
+            </div>
 
         </div>
     );

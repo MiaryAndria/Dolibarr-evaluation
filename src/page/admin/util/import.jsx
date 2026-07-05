@@ -3,12 +3,15 @@ import Papa from "papaparse"
 import axios from "axios"
 import api_service from "../../../api/api_service"
 import api_node from "../../../api/api_node"
+import api_sqlite from "../../../api/api_sqlite"
+
+import "../../../styles/import.css"
 
 function ImportData() {
     const [employes, setEmployes] = useState([])
     const [salaires, setSalaires] = useState([])
     const [imagesZip, setImagesZip] = useState(null)
-
+    
     const [employeMap, setEmployeMap] = useState({})
     const [salaireMap, setSalaireMap] = useState({})
     const [bankAccountId, setBankAccountId] = useState(null)
@@ -21,15 +24,36 @@ function ImportData() {
         setMessages(prev => [...prev, { text, type, time: new Date().toLocaleTimeString() }])
     }
 
-    function convertDate(dateStr) {
+    const convertDate = (date) => {
+        if (!date) return "";
+        const [jour, mois, annee] = date.split("/");
+        return `${annee}-${mois}-${jour}`;
+    };
+
+    function getVal(row, ...keys) {
+        if (!row) return '';
+        for (const k of keys) {
+            const cleanK = k.replace(/[^a-z0-9]/gi, '').toLowerCase();
+            const foundKey = Object.keys(row).find(rk => {
+                const cleanRk = String(rk).replace(/[^a-z0-9]/gi, '').toLowerCase();
+                return cleanRk === cleanK || (cleanRk.length > 3 && cleanK.includes(cleanRk)) || (cleanK.length > 3 && cleanRk.includes(cleanK));
+            });
+            if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null) {
+                return String(row[foundKey]).trim();
+            }
+        }
+        return '';
+    }
+
+    function convertDateDolibarr(dateStr) {
         if (!dateStr) return 0
-        const s = String(dateStr).trim()
+        let s = String(dateStr).replace(/["'\[\]{} ]/g, '').trim()
         const parts = s.includes('-') ? s.split('-') : s.split('/')
         if (parts.length !== 3) return 0
         let day, month, year
-        if (parts[0].length === 4) { 
+        if (parts[0].length === 4) {
             year = parts[0]; month = parts[1]; day = parts[2]
-        } else { 
+        } else {
             day = parts[0]; month = parts[1]; year = parts[2]
         }
         const fullYear = year.length === 2 ? '20' + year : year
@@ -47,19 +71,20 @@ function ImportData() {
 
     function parsePaiements(str) {
         if (!str || String(str).trim() === '') return []
+        const results = []
         try {
-            let jsonStr = String(str).trim()
-            if (jsonStr.startsWith('{')) jsonStr = '[' + jsonStr.slice(1)
-            if (jsonStr.endsWith('}')) jsonStr = jsonStr.slice(0, -1) + ']'
-            const arr = JSON.parse(jsonStr)
-            return arr.map(entry => ({
-                date: entry[0],
-                montant: parseFloat(entry[1])
-            }))
+            const regex = /["']*(\d{1,4}[\/\-]\d{1,2}[\/\-]\d{1,4})["']*\s*,\s*["']*(\-?[0-9\.\,\s]+)["']*/g;
+            let match;
+            while ((match = regex.exec(String(str))) !== null) {
+                results.push({
+                    date: match[1],
+                    montant: parseMontant(match[2])
+                });
+            }
         } catch (e) {
             console.warn('Impossible de parser le champ paiement:', str, e)
-            return []
         }
+        return results;
     }
 
     function parseMontant(val) {
@@ -78,14 +103,14 @@ function ImportData() {
             transformHeader: h => h.toLowerCase().trim(),
             complete: (results) => {
                 const emp = results.data.map(row => ({
-                    refEmploye: (row.ref_employe || row.ref || '').trim(),
-                    nom: (row.nom || row.name || '').trim(),
-                    genre: (row.genre || row.sexe || '').trim(),
-                    identifiant: (row.identifiant || row.login || '').trim(),
-                    mdp: (row.mdp || row.mot_de_passe || row.password || '').trim(),
-                    heureTravailSemaine: parseMontant(row.heure_travail_semaine || row.heures),
-                    poste : (row.poste)
-                })).filter(e => e.refEmploye && e.identifiant) 
+                    refEmploye: getVal(row, 'ref_employe', 'refemploye', 'ref', 'identifiant_employe', 'id'),
+                    nom: getVal(row, 'nom', 'name', 'employe_nom', 'firstname', 'lastname'),
+                    genre: getVal(row, 'genre', 'sexe', 'gender'),
+                    identifiant: getVal(row, 'identifiant', 'login', 'username', 'pseudo'),
+                    mdp: getVal(row, 'mdp', 'mot_de_passe', 'password', 'pass'),
+                    heureTravailSemaine: parseMontant(getVal(row, 'heure_travail_semaine', 'heure_travail', 'heures', 'heure', 'heuresemaine')),
+                    poste: getVal(row, 'poste', 'job', 'fonction', 'role')
+                })).filter(e => e.refEmploye && e.identifiant)
                 setEmployes(emp)
                 addMsg(`${emp.length} employé(s) lu(s) depuis le CSV`)
             }
@@ -103,7 +128,7 @@ function ImportData() {
         try {
             const resp = await api_service.get('users')
             existingUsers = resp.data
-        } catch (e) {}
+        } catch (e) { }
 
         for (let i = 0; i < employes.length; i++) {
             const emp = employes[i]
@@ -126,7 +151,7 @@ function ImportData() {
                     gender: mapGender(emp.genre),
                     weeklyhours: emp.heureTravailSemaine,
                     ref_employee: emp.refEmploye,
-                    job:emp.poste
+                    job: emp.poste
                 })
                 const id = response.data
                 newMap[emp.refEmploye] = id
@@ -154,12 +179,12 @@ function ImportData() {
             transformHeader: h => h.toLowerCase().trim(),
             complete: (results) => {
                 const sal = results.data.map(row => ({
-                    refSalaire: (row.ref_salaire || row.ref || '').trim(),
-                    refEmploye: (row.ref_employe || '').trim(),
-                    dateDebut: (row.date_debut || row.debut || '').trim(),
-                    dateFin: (row.date_fin || row.fin || '').trim(),
-                    montant: parseMontant(row.montant),
-                    paiement: (row.paiement || row.paiements || '').trim()
+                    refSalaire: getVal(row, 'ref_salaire', 'refsalaire', 'ref', 'id'),
+                    refEmploye: getVal(row, 'ref_employe', 'refemploye', 'employe', 'user'),
+                    dateDebut: getVal(row, 'date_debut', 'datedebut', 'debut', 'start'),
+                    dateFin: getVal(row, 'date_fin', 'datefin', 'fin', 'end'),
+                    montant: parseMontant(getVal(row, 'montant', 'somme', 'amount', 'prix')),
+                    paiement: getVal(row, 'paiement', 'paiements', 'payment')
                 })).filter(s => s.refSalaire && s.refEmploye)
                 setSalaires(sal)
                 addMsg(`${sal.length} salaire(s) lu(s) depuis le CSV`)
@@ -217,8 +242,8 @@ function ImportData() {
                     continue
                 }
 
-                const datesp = convertDate(sal.dateDebut)
-                const dateep = convertDate(sal.dateFin)
+                const datesp = convertDateDolibarr(sal.dateDebut)
+                const dateep = convertDateDolibarr(sal.dateFin)
 
                 const salResponse = await api_service.post('salaries', {
                     fk_user: parseInt(fkUser),
@@ -236,7 +261,7 @@ function ImportData() {
                 for (const p of paiements) {
                     try {
                         await api_service.post(`salaries/${salId}/payments`, {
-                            datepaye: convertDate(p.date),
+                            datepaye: convertDateDolibarr(p.date),
                             paiementtype: 'VIR',
                             chid: salId,
                             amounts: { [salId]: p.montant },
@@ -293,7 +318,7 @@ function ImportData() {
             const formData = new FormData()
             formData.append('zipfile', imagesZip)
             formData.append('mapping', JSON.stringify(currentMap))
-            
+
             const response = await api_node.post('/api/upload-zip', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             })
@@ -306,50 +331,61 @@ function ImportData() {
     }
 
     return (
-        <div>
-            <h2>Import de données</h2>
-            
+        <div className="import-page">
+            <h2 className="page-title">Import de données</h2>
+
             {progress.total > 0 && (
-                <div style={{ marginBottom: '16px', padding: '10px', backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: 'bold' }}>
+                <div className="alert-info">
                     Progression de l'import des {progress.section} : {progress.current} sur {progress.total}
                 </div>
             )}
 
-            <h3>CSV 1 — Employés</h3>
-            <p>Colonnes: ref_employe, nom, genre, identifiant, mdp, heure_travail_semaine</p>
-            <input type="file" accept=".csv" onChange={handleEmployeFile} disabled={loading} />
-            <button onClick={sendEmployes} disabled={loading || employes.length === 0}>
-                Importer {employes.length} employé(s)
-            </button>
+            <div className="import-section section-block">
+                <h2>CSV 1 — Employés</h2>
+                <p className="text-muted-sm mb-8">Colonnes: ref_employe, nom, genre, identifiant, mdp, heure_travail_semaine</p>
+                <div className="flex-row gap-12 align-center">
+                    <input type="file" accept=".csv" onChange={handleEmployeFile} disabled={loading} className="field-input flex-1"/>
+                    <button className="btn" onClick={sendEmployes} disabled={loading || employes.length === 0}>
+                        Importer {employes.length} employé(s)
+                    </button>
+                </div>
+            </div>
 
-            <hr />
+            <div className="import-section section-block">
+                <h2>CSV 2 — Salaires & Paiements</h2>
+                <p className="text-muted-sm mb-8">Colonnes: ref_salaire, ref_employe, date_debut, date_fin, montant, paiement</p>
+                <div className="flex-row gap-12 align-center">
+                    <input type="file" accept=".csv" onChange={handleSalaireFile} disabled={loading} className="field-input flex-1"/>
+                    <button className="btn" onClick={sendSalaires} disabled={loading || salaires.length === 0}>
+                        Importer {salaires.length} salaire(s)
+                    </button>
+                </div>
+            </div>
 
-            <h3>CSV 2 — Salaires & Paiements</h3>
-            <p>Colonnes: ref_salaire, ref_employe, date_debut, date_fin, montant, paiement</p>
-            <input type="file" accept=".csv" onChange={handleSalaireFile} disabled={loading} />
-            <button onClick={sendSalaires} disabled={loading || salaires.length === 0}>
-                Importer {salaires.length} salaire(s)
-            </button>
-
-            <hr />
-
-            <h3>Images (fichier ZIP)</h3>
-            <p>Le nom des images doit correspondre à ref_employe (ex: 1.png pour ref 1)</p>
-            <input type="file" accept=".zip" onChange={handleImgChange} disabled={loading} />
-            <button onClick={sendImages} disabled={loading || !imagesZip}>
-                Uploader les images
-            </button>
-
-            <hr />
+            <div className="import-section section-block">
+                <h2>Images (fichier ZIP)</h2>
+                <p className="text-muted-sm mb-8">Le nom des images doit correspondre à ref_employe (ex: 1.png pour ref 1)</p>
+                <div className="flex-row gap-12 align-center">
+                    <input type="file" accept=".zip" onChange={handleImgChange} disabled={loading} className="field-input flex-1"/>
+                    <button className="btn" onClick={sendImages} disabled={loading || !imagesZip}>
+                        Uploader les images
+                    </button>
+                </div>
+            </div>
 
             {messages.length > 0 && (
-                <div>
-                    <h4>Journal <button onClick={() => setMessages([])} disabled={loading}>Effacer</button></h4>
+                <div className="import-section section-block">
+                    <div className="flex-row justify-between align-center mb-16">
+                        <h4 className="font-medium">Journal</h4>
+                        <button className="btn btn-outline btn-sm" onClick={() => setMessages([])} disabled={loading}>Effacer</button>
+                    </div>
+                    <div className="log-container">
                     {messages.map((msg, i) => (
-                        <div key={i} style={{ color: msg.type === 'error' ? 'red' : msg.type === 'success' ? 'green' : msg.type === 'warning' ? '#d97706' : 'black' }}>
-                            [{msg.time}] {msg.text}
+                        <div key={i} className={`log-item ${msg.type === 'error' ? 'text-danger' : msg.type === 'success' ? 'text-success' : msg.type === 'warning' ? 'text-danger' : ''}`}>
+                            <span className="log-time">[{msg.time}]</span> {msg.text}
                         </div>
                     ))}
+                    </div>
                 </div>
             )}
         </div>

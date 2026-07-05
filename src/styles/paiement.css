@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.paiement-page {
+  padding: 32px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+.paiement-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}

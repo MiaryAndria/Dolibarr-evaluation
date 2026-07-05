@@ -2,6 +2,8 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom";
 import api_service from "../../../../api/api_service";
 
+import "../../../../styles/paiement.css"
+
 function PayerSalaire() {
     const [user, setUser] = useState([]);
     const [selectedId, setSelectedId] = useState('');
@@ -140,65 +142,86 @@ function PayerSalaire() {
     }, []);
 
     return (
-        <div>
-            <button onClick={() => navigate('/payer/all')}> Gerer multipaiement </button>
-            <h1>Paiement salaire </h1>
-            <p>{message}</p>
-            <p>Entrer montant</p>
-            <input onChange={(e) => setMontant(Number(e.target.value))} type="number" placeholder="10000" />
-            <p>Choisissez employé</p>
-            <select
-                value={selectedId ?? ""}
-                onChange={(e) =>
-                    setSelectedId(e.target.value ? parseInt(e.target.value) : null)
-                }
-            >
-                <option value="">-- Choisir --</option>
-                {user.map((u) => (
-                    <option key={u.id} value={u.id}>
-                        {u.lastname} {u.firstname}
-                    </option>
-                ))}
-            </select>
+        <div className="paiement-page">
+            <div className="flex-row justify-between align-center mb-16">
+                <h1 className="page-title" style={{margin: 0}}>Paiement salaire</h1>
+                <button className="btn btn-outline" onClick={() => navigate('/payer/all')}> Gérer multipaiement </button>
+            </div>
+            
+            {message && <div className="msg">{message}</div>}
+            
+            <div className="form-group mt-16">
+                <label className="form-label">Entrer montant</label>
+                <input className="field-input" onChange={(e) => setMontant(Number(e.target.value))} type="number" placeholder="10000" />
+            </div>
 
-            <p>Date début</p>
-            <input type="date" onChange={(e) => setdateDebut(e.target.value)} />
+            <div className="form-group mt-16">
+                <label className="form-label">Choisissez employé</label>
+                <select className="field-select"
+                    value={selectedId ?? ""}
+                    onChange={(e) =>
+                        setSelectedId(e.target.value ? parseInt(e.target.value) : null)
+                    }
+                >
+                    <option value="">-- Choisir --</option>
+                    {user.map((u) => (
+                        <option key={u.id} value={u.id}>
+                            {u.lastname} {u.firstname}
+                        </option>
+                    ))}
+                </select>
+            </div>
 
-            <p>Date fin</p>
-            <input type="date" onChange={(e) => setdateFin(e.target.value)} />
+            <div className="form-group mt-16">
+                <label className="form-label">Date début</label>
+                <input className="field-input" type="date" onChange={(e) => setdateDebut(e.target.value)} />
+            </div>
 
-            <button onClick={creerSalaire}>
-                creer salaire
+            <div className="form-group mt-16">
+                <label className="form-label">Date fin</label>
+                <input className="field-input" type="date" onChange={(e) => setdateFin(e.target.value)} />
+            </div>
+
+            <button className="btn w-100 mt-24" onClick={creerSalaire}>
+                Créer salaire
             </button>
 
-            <h3>Sélectionnez les salaires à payer :</h3>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
+            <h3 className="section-block-title mt-24 mb-16">Sélectionnez les salaires à payer :</h3>
+            <ul className="check-list mb-24">
                 {salaire.map(s => {
                     const totalPaye = getMontantsDejaPayes(s.id);
                     const restant = parseFloat(s.amount) - totalPaye;
                     const userSalaire = user.find(u => u.id === s.fk_user);
                     return (
-                        <li key={s.id} style={{ margin: '10px 0' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                        <li key={s.id}>
+                            <label>
                                 <input
                                     type="checkbox"
                                     checked={selectedSalaire.includes(s.id)}
                                     onChange={() => handleCheckboxChange(s.id)}
                                     disabled={restant ===0}
                                 />
-                                <span>{userSalaire?.lastname} {userSalaire?.firstname} - {s.label}</span>
-                                <span>Montant: {s.amount}</span>
-                                <span>Payé: {totalPaye}</span>
-                                <span>Restant: {restant}</span>
-                                <span>{getStatusLabel(s, totalPaye)}</span>
+                                <div className="flex-col gap-4">
+                                    <span className="font-medium">{userSalaire?.lastname} {userSalaire?.firstname} - {s.label}</span>
+                                    <span className="text-muted-sm">Montant: {s.amount} | Payé: {totalPaye} | Restant: {restant}</span>
+                                    <span>{getStatusLabel(s, totalPaye)}</span>
+                                </div>
                             </label>
                         </li>
                     );
                 })}
             </ul>
-            <input type="number" onChange={(e) => setMontantsPaiement(e.target.value)} placeholder="choisissez montant à payer " />
-            <input type="date" onChange={(e) => setDatePayement(e.target.value)} placeholder="choisissez date de paiement " />
-            <button onClick={() => payerSalaire(selectedSalaire)}> Payer salaire </button>
+
+            <div className="form-row mt-24">
+                <div className="form-group flex-1">
+                    <input className="field-input" type="number" onChange={(e) => setMontantsPaiement(e.target.value)} placeholder="Choisissez montant à payer " />
+                </div>
+                <div className="form-group flex-1">
+                    <input className="field-input" type="date" onChange={(e) => setDatePayement(e.target.value)} placeholder="Choisissez date de paiement " />
+                </div>
+            </div>
+
+            <button className="btn w-100 mt-16" onClick={() => payerSalaire(selectedSalaire)}> Payer salaire </button>
         </div >
     )
 }

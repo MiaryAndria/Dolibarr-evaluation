@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import api_service from "../../../../api/api_service";
 import { useNavigate } from "react-router-dom";
+import "../../../../styles/salaries.css"
 
 function ListeSalarier() {
     const [salarier, setSalarier] = useState([]);
-
     const navigate = useNavigate();
-
     const baseUrl = api_service.defaults.baseURL.replace('/api/index.php/', '')
-
     const getPhotoUrl = (user) => {
         const numberPath = parseInt(user.id) - 1;
         return `${baseUrl}/viewimage.php?modulepart=userphoto&file=${user.id}/photos/${numberPath}.png`;
@@ -30,10 +28,11 @@ function ListeSalarier() {
     }, []);
 
     return (
-        <div>
-            <h2>Liste des salariés</h2>
+        <div className="salaries-page">
+            <h1 className="page-title">Liste des salariés</h1>
 
-            <table >
+            <div className="table-wrapper">
+            <table className="data-table">
                 <thead>
                     <tr>
                         <th>Photo</th>
@@ -59,12 +58,13 @@ function ListeSalarier() {
                             <td>{user.gender}</td>
                             <td>{user.job}</td>
                             <td>
-                                <button onClick={() => navigate(`/salarier/${user.id}`)}>Voir détail</button>
+                                <button className="btn btn-outline btn-sm" onClick={() => navigate(`/salarier/${user.id}`)}>Voir détail</button>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 }

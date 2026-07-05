@@ -5,6 +5,8 @@ import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import "./slider.css"
 
+import "../../../../styles/paiement.css"
+
 function MultiPaiement() {
     const [idsSelectionnes, setIdsSelectionnes] = useState([]);
     const [posteSearch, setPosteSearch] = useState('');
@@ -95,64 +97,86 @@ function MultiPaiement() {
     }, []);
 
     return (
-        <div>
-            <h1>Page creation salaire multiple</h1>
-            <select
-                value={genderSearch}
-                onChange={(e) => setGenderSearch(e.target.value)}
-            >
-                <option value="">Genre</option>
-                <option value="man">Homme</option>
-                <option value="woman">Femme</option>
-            </select>
+        <div className="paiement-page">
+            <h1 className="page-title">Page création salaire multiple</h1>
+            
+            <div className="filter-bar">
+                <div className="form-group" style={{flex: 1}}>
+                    <label className="form-label">Genre</label>
+                    <select className="field-select"
+                        value={genderSearch}
+                        onChange={(e) => setGenderSearch(e.target.value)}
+                    >
+                        <option value="">Tous</option>
+                        <option value="man">Homme</option>
+                        <option value="woman">Femme</option>
+                    </select>
+                </div>
 
-            <select
-                value={posteSearch}
-                onChange={(e) => setPosteSearch(e.target.value)}
-            >
-                <option value="">Poste</option>
-                <option value="Comptable">Comptable</option>
-                <option value="Technicien">Technicien</option>
-                <option value="Vente">Vente</option>
-            </select>
+                <div className="form-group" style={{flex: 1}}>
+                    <label className="form-label">Poste</label>
+                    <select className="field-select"
+                        value={posteSearch}
+                        onChange={(e) => setPosteSearch(e.target.value)}
+                    >
+                        <option value="">Poste</option>
+                        <option value="Comptable">Comptable</option>
+                        <option value="Technicien">Technicien</option>
+                        <option value="Vente">Vente</option>
+                    </select>
+                </div>
 
-            <div className="slider-container">
-                <Slider
-                    range
-                    min={0}
-                    max={200}
-                    value={range}
-                    onChange={setRange}
-                />
-                <p className="slider-range-label">
-                    {range[0]}h — {range[1]}h
-                </p>
+                <div className="form-group slider-container" style={{flex: 2}}>
+                    <label className="form-label">Heures de travail</label>
+                    <Slider
+                        range
+                        min={0}
+                        max={200}
+                        value={range}
+                        onChange={setRange}
+                    />
+                    <p className="slider-range-label" style={{marginTop: "8px"}}>
+                        {range[0]}h — {range[1]}h
+                    </p>
+                </div>
+                
+                <button className="btn btn-outline" onClick={clearFilter}>Supprimer filtre</button>
             </div>
-            <button onClick={clearFilter}>Supprimer filtre</button>
 
-            <ul>
+            <ul className="check-list">
                 {filteredUsers.map(s => (
-                    <li key={s.id} style={{ margin: '10px 0' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <li key={s.id}>
+                        <label>
                             <input
                                 type="checkbox"
                                 checked={idsSelectionnes.includes(s.id)}
                                 onChange={() => handleCheckboxChange(s.id)}
                             />
-                            {s.lastname}{s.firstname}
+                            <span>{s.lastname} {s.firstname} <span style={{color: "var(--text-muted)", fontSize: "0.85rem"}}>({s.job || "Aucun poste"})</span></span>
                         </label>
                     </li>
                 ))}
             </ul>
 
-            <p>Entrer montant</p>
-            <input onChange={(e) => setMontant(Number(e.target.value))} type="number" placeholder="10000" />
-            <p>Date début</p>
-            <input type="date" onChange={(e) => setdateDebut(e.target.value)} />
-            <p>Date fin</p>
-            <input type="date" onChange={(e) => setdateFin(e.target.value)} />
-            <button onClick={creerSalaire}> creer salaire</button>
-            <button onClick={() => navigate('/liste/salarier')}>Voir liste salarier sans filtres </button>
+            <div className="actions-row">
+                <div className="form-group" style={{flex: 1}}>
+                    <label className="form-label">Montant</label>
+                    <input className="field-input" onChange={(e) => setMontant(Number(e.target.value))} type="number" placeholder="10000" />
+                </div>
+                <div className="form-group" style={{flex: 1}}>
+                    <label className="form-label">Date début</label>
+                    <input className="field-input" type="date" onChange={(e) => setdateDebut(e.target.value)} />
+                </div>
+                <div className="form-group" style={{flex: 1}}>
+                    <label className="form-label">Date fin</label>
+                    <input className="field-input" type="date" onChange={(e) => setdateFin(e.target.value)} />
+                </div>
+            </div>
+            
+            <div className="actions-row">
+                <button className="btn" onClick={creerSalaire}>Créer salaire</button>
+                <button className="btn btn-outline" onClick={() => navigate('/liste/salarier')}>Voir liste salariés sans filtres</button>
+            </div>
 
         </div>
     )

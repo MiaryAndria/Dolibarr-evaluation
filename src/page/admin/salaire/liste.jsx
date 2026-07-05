@@ -2,6 +2,8 @@ import { useEffect, useState } from "react"
 import api_service from "../../../api/api_service";
 import api_sqlite from "../../../api/api_sqlite";
 
+import "../../../styles/salaries.css"
+
 function ListeSalaire() {
     const [salaire, setSalaire] = useState([]);
     const [paiement, setPaiement] = useState([]);
@@ -146,10 +148,12 @@ function ListeSalaire() {
     }, [paiement, salaire, user])
 
     return (
-        <div>
-            <h1>Dashboard suivi salaire</h1>
-            <p>Suivi salaire par genre</p>
-            <table>
+        <div className="salaries-page">
+            <h1 className="page-title">Dashboard suivi salaire</h1>
+            
+            <h3 className="section-block-title">Suivi salaire par genre</h3>
+            <div className="table-wrapper mb-32">
+            <table className="data-table">
                 <thead>
                     <tr>
                         <th>Homme</th>
@@ -163,10 +167,12 @@ function ListeSalaire() {
                     </tr>
                 </tbody>
             </table>
+            </div>
 
 
-            <p>Suivi salaire par mois</p>
-            <table>
+            <h3 className="section-block-title">Suivi salaire par mois</h3>
+            <div className="table-wrapper mb-32">
+            <table className="data-table">
                 <thead>
                     <tr>
                         {mois.map(m => <th key={m.id}>{m.date}</th>)}
@@ -180,9 +186,11 @@ function ListeSalaire() {
                     </tr>
                 </tbody>
             </table>
+            </div>
 
-            <p>Suivi paiement par genre</p>
-            <table>
+            <h3 className="section-block-title">Suivi paiement par genre</h3>
+            <div className="table-wrapper mb-32">
+            <table className="data-table">
                 <thead>
                     <tr>
                         <th>Homme</th>
@@ -196,9 +204,11 @@ function ListeSalaire() {
                     </tr>
                 </tbody>
             </table>
+            </div>
 
-            <p>Suivi paiement par mois</p>
-            <table>
+            <h3 className="section-block-title">Suivi paiement par mois</h3>
+            <div className="table-wrapper mb-32">
+            <table className="data-table">
                 <thead>
                     <tr>
                         {mois.map(m => <th key={m.id}>{m.date}</th>)}
@@ -212,6 +222,7 @@ function ListeSalaire() {
                     </tr>
                 </tbody>
             </table>
+            </div>
         </div>
     )
 }
