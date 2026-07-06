@@ -61,11 +61,13 @@ function MultiPaiement() {
                         label: 'salaire',
                         paye: 0
                     })
+                    setIdsSelectionnes([]);
                 } catch (e) {
                     console.log(e)
                 }
             }
             console.log('creation salaire')
+
         }
     }
 
@@ -99,9 +101,9 @@ function MultiPaiement() {
     return (
         <div className="paiement-page">
             <h1 className="page-title">Page création salaire multiple</h1>
-            
+
             <div className="filter-bar">
-                <div className="form-group" style={{flex: 1}}>
+                <div className="form-group" style={{ flex: 1 }}>
                     <label className="form-label">Genre</label>
                     <select className="field-select"
                         value={genderSearch}
@@ -113,7 +115,7 @@ function MultiPaiement() {
                     </select>
                 </div>
 
-                <div className="form-group" style={{flex: 1}}>
+                <div className="form-group" style={{ flex: 1 }}>
                     <label className="form-label">Poste</label>
                     <select className="field-select"
                         value={posteSearch}
@@ -126,7 +128,7 @@ function MultiPaiement() {
                     </select>
                 </div>
 
-                <div className="form-group slider-container" style={{flex: 2}}>
+                <div className="form-group slider-container" style={{ flex: 2 }}>
                     <label className="form-label">Heures de travail</label>
                     <Slider
                         range
@@ -135,11 +137,11 @@ function MultiPaiement() {
                         value={range}
                         onChange={setRange}
                     />
-                    <p className="slider-range-label" style={{marginTop: "8px"}}>
+                    <p className="slider-range-label" style={{ marginTop: "8px" }}>
                         {range[0]}h — {range[1]}h
                     </p>
                 </div>
-                
+
                 <button className="btn btn-outline" onClick={clearFilter}>Supprimer filtre</button>
             </div>
 
@@ -152,30 +154,31 @@ function MultiPaiement() {
                                 checked={idsSelectionnes.includes(s.id)}
                                 onChange={() => handleCheckboxChange(s.id)}
                             />
-                            <span>{s.lastname} {s.firstname} <span style={{color: "var(--text-muted)", fontSize: "0.85rem"}}>({s.job || "Aucun poste"})</span></span>
+                            <span>{s.lastname} {s.firstname} <span style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>({s.job || "Aucun poste"})</span></span>
                         </label>
                     </li>
                 ))}
             </ul>
 
             <div className="actions-row">
-                <div className="form-group" style={{flex: 1}}>
+                <div className="form-group" style={{ flex: 1 }}>
                     <label className="form-label">Montant</label>
                     <input className="field-input" onChange={(e) => setMontant(Number(e.target.value))} type="number" placeholder="10000" />
                 </div>
-                <div className="form-group" style={{flex: 1}}>
+                <div className="form-group" style={{ flex: 1 }}>
                     <label className="form-label">Date début</label>
                     <input className="field-input" type="date" onChange={(e) => setdateDebut(e.target.value)} />
                 </div>
-                <div className="form-group" style={{flex: 1}}>
+                <div className="form-group" style={{ flex: 1 }}>
                     <label className="form-label">Date fin</label>
                     <input className="field-input" type="date" onChange={(e) => setdateFin(e.target.value)} />
                 </div>
             </div>
-            
+
             <div className="actions-row">
                 <button className="btn" onClick={creerSalaire}>Créer salaire</button>
                 <button className="btn btn-outline" onClick={() => navigate('/liste/salarier')}>Voir liste salariés sans filtres</button>
+                <button className="btn btn-outline" onClick={() => navigate('/salaire/creer/special')}>Creer salaire  avec gestion jour férié</button> 
             </div>
 
         </div>

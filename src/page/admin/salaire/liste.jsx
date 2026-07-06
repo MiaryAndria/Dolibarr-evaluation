@@ -8,7 +8,7 @@ function ListeSalaire() {
     const [salaire, setSalaire] = useState([]);
     const [paiement, setPaiement] = useState([]);
     const [user, setUser] = useState([]);
-    const [mois,setMois] = useState([]);
+    const [mois, setMois] = useState([]);
     const [result, setResult] = useState({ M: 0, F: 0 });
     const [resultPaiementGenre, setResultPaiementGenre] = useState({ M: 0, F: 0 });
     const [resultMois, setResultMois] = useState({
@@ -130,13 +130,14 @@ function ListeSalaire() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                await Promise.all([getSalaires(), getUser(), getPaiements(),getAllMonth()])
-            } catch (error) { 
-                console.error(error) }
+                await Promise.all([getSalaires(), getUser(), getPaiements(), getAllMonth()])
+            } catch (error) {
+                console.error(error)
+            }
         }
         fetchData()
     }, [])
-
+    console.log(salaire)
     useEffect(() => {
         getSalaireParGenre()
         getSalaireParMois()
@@ -147,81 +148,96 @@ function ListeSalaire() {
         getPaiementParGenre()
     }, [paiement, salaire, user])
 
+    const totalMoisPaiement = Object.values(resultMois).reduce(
+        (sum, value) => sum + Number(value),
+        0
+    );
+
+    const totalMoisSalaire = Object.values(resultMoisSalaire).reduce(
+        (sum, value) => sum + Number(value),
+        0
+    );
+
     return (
+
         <div className="salaries-page">
             <h1 className="page-title">Dashboard suivi salaire</h1>
-            
+
             <h3 className="section-block-title">Suivi salaire par genre</h3>
             <div className="table-wrapper mb-32">
-            <table className="data-table">
-                <thead>
-                    <tr>
-                        <th>Homme</th>
-                        <th>Femme</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{result.M}</td>
-                        <td>{result.F}</td>
-                    </tr>
-                </tbody>
-            </table>
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            <th>Homme</th>
+                            <th>Femme</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{result.M}</td>
+                            <td>{result.F}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>Total = {(result.M) + (result.F)}</p>
             </div>
 
 
             <h3 className="section-block-title">Suivi salaire par mois</h3>
             <div className="table-wrapper mb-32">
-            <table className="data-table">
-                <thead>
-                    <tr>
-                        {mois.map(m => <th key={m.id}>{m.date}</th>)}
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        {mois.map(m => (
-                            <td key={m.id}>{resultMoisSalaire[m.date] || 0}</td>
-                        ))}
-                    </tr>
-                </tbody>
-            </table>
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            {mois.map(m => <th key={m.id}>{m.date}</th>)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            {mois.map(m => (
+                                <td key={m.id}>{resultMoisSalaire[m.date] || 0}</td>
+                            ))}
+                        </tr>
+                    </tbody>
+                </table>
+                <p>Total = {totalMoisSalaire}</p>
             </div>
 
             <h3 className="section-block-title">Suivi paiement par genre</h3>
             <div className="table-wrapper mb-32">
-            <table className="data-table">
-                <thead>
-                    <tr>
-                        <th>Homme</th>
-                        <th>Femme</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{resultPaiementGenre.M}</td>
-                        <td>{resultPaiementGenre.F}</td>
-                    </tr>
-                </tbody>
-            </table>
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            <th>Homme</th>
+                            <th>Femme</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{resultPaiementGenre.M}</td>
+                            <td>{resultPaiementGenre.F}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>Total = {(resultPaiementGenre.M) + (resultPaiementGenre.F)}</p>
             </div>
 
             <h3 className="section-block-title">Suivi paiement par mois</h3>
             <div className="table-wrapper mb-32">
-            <table className="data-table">
-                <thead>
-                    <tr>
-                        {mois.map(m => <th key={m.id}>{m.date}</th>)}
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        {mois.map(m => (
-                            <td key={m.id}>{resultMois[m.date] || 0}</td>
-                        ))}
-                    </tr>
-                </tbody>
-            </table>
+                <table className="data-table">
+                    <thead>
+                        <tr>
+                            {mois.map(m => <th key={m.id}>{m.date}</th>)}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            {mois.map(m => (
+                                <td key={m.id}>{resultMois[m.date] || 0}</td>
+                            ))}
+                        </tr>
+                    </tbody>
+                </table>
+                <p>Total = {totalMoisPaiement}</p>
             </div>
         </div>
     )

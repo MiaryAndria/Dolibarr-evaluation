@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import LoginAdmin from './page/admin/login'
 import AcceuilAdmin from './page/admin/acceuil'
@@ -12,11 +12,16 @@ import UpdateFerier from './page/admin/ferier/update'
 import MultiPaiement from './page/frontoffice/salaries/create/multi_payement'
 import ListeSalarier from './page/frontoffice/salaries/create/listeSalarier'
 import SalarierDetail from './page/frontoffice/salaries/create/detailSalarier'
+import GenererSalaire from './page/frontoffice/salaries/create/generer_salaire'
 
 function App() {
+  const location = useLocation()
+  const hideNavbar = ['/admin'].includes(location.pathname)
+
   return (
     <div className="app-container">
-      <Navbar />
+      {!hideNavbar && <Navbar />}
+
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Salaries />} />
@@ -32,6 +37,7 @@ function App() {
           <Route path="/payer/all" element={<MultiPaiement />} />
           <Route path="/liste/salarier" element={<ListeSalarier />} />
           <Route path="/salarier/:id" element={<SalarierDetail />} />
+          <Route path="/salaire/creer/special" element={<GenererSalaire />} />
         </Routes>
       </main>
     </div>

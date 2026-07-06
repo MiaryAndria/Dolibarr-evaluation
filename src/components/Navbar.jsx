@@ -47,6 +47,7 @@ function Navbar() {
                         <button className={isActive('/liste/salarier')} onClick={() => navigate('/liste/salarier')}>Employés</button>
                         <button className={isActive('/payer/salaire')} onClick={() => navigate('/payer/salaire')}>Payer un salaire</button>
                         <button className={isActive('/payer/all')} onClick={() => navigate('/payer/all')}>Paiement multiple</button>
+                        <button className={isActive('/salaire/creer/special')} onClick={() => navigate('/salaire/creer/special')}>Generer paiement salaire avec jour férié</button>
                     </>
                 )}
             </div>
